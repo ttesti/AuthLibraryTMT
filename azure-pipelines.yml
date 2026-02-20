@@ -1,0 +1,73 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+
+
+variables:
+  buildConfiguration: 'Release'
+  packageOutputPath: '$(Build.ArtifactStagingDirectory)/packages'
+
+  # Semantic Versioning Variables
+  majorVersion: 1   # Adjust manually for breaking changes
+  minorVersion: 0   # Adjust manually for new features
+  patchVersion: $[counter(variables['Build.SourceBranchName'], 0)]  # Auto-increment per build on the same branch
+
+  # Compose full version
+  packageVersion: "$(majorVersion).$(minorVersion).$(patchVersion)"
+
+stages:
+- stage: BuildAndPublish
+  displayName: 'Build, Pack, and Publish NuGet Package'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build, Pack, and Push NuGet Package'
+    steps:
+
+    # Install NuGet
+    - task: NuGetToolInstaller@1
+      displayName: 'Install NuGet'
+
+    # Restore packages
+    - task: NuGetCommand@2
+      displayName: 'Restore NuGet Packages'
+      inputs:
+        command: 'restore'
+        restoreSolution: '**/*.sln'
+
+# Build project
+- task: DotNetCoreCLI@2
+  displayName: 'Build Project'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+# Pack project as NuGet package
+- task: DotNetCoreCLI@2
+  displayName: 'Pack Project as NuGet Package'
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --output $(packageOutputPath) /p:PackageVersion=$(packageVersion)'
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '66e76a05-128b-4dcc-8caf-ba99eee785cd/9dde8592-4e45-49de-928f-6b3082c08da9'
