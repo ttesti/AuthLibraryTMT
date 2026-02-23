@@ -15,7 +15,7 @@
     <Nullable>disable</Nullable>
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  <Title>Authentication Library</Title>
-	  <PackageId>AuthLibrary</PackageId>
+	  <PackageId>AuthLibraryTMT</PackageId>
 	  <Authors>Thomas M Testi</Authors>
 	  <Company> Blue Wolf Enterprises LLC.</Company>
 	  <Description>This package includes common permission based authentication</Description>
